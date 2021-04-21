@@ -5,7 +5,8 @@ from rest_framework.views import APIView
 
 from polling_api.permissions import IsStaffOrOwner
 from polling_api.models import Poll, RespondentUser
-from polling_api.serializers import PollSerializer, UserSerializer, VoteSerializer
+from polling_api.serializers import (PollSerializer, UserSerializer,
+                                     VoteSerializer)
 
 
 class PollViewSet(viewsets.ModelViewSet):
@@ -24,12 +25,13 @@ class PollViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    # queryset = get_object_or_404(Poll, respondent=request.HttpRequest.user)
     serializer_class = UserSerializer
     permission_classes = [IsStaffOrOwner, ]
 
     def get_queryset(self):
-        polls = Poll.objects.select_related('poll_questions', 'poll_respondent').filter(
+        polls = Poll.objects.select_related(
+            'poll_questions', 'poll_respondent'
+        ).filter(
             respondent=self.request.user
         )
         return polls.all()
@@ -41,7 +43,7 @@ class VoteViewset(APIView):
         if not self.request.user.is_authenticated():
             user = RespondentUser.objects.create()
         else:
-            user=RespondentUser.objects.get(id=self.request.user.id)
+            user = RespondentUser.objects.get(id=self.request.user.id)
         serializer = VoteSerializer(respondent=user, data=request.data)
         if serializer.is_valid():
             serializer.save()
